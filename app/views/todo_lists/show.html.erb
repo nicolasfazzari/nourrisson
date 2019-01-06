@@ -1,0 +1,254 @@
+<section class="main-content-wrapper">
+	<section id="main-content">
+      
+          <div class="row">
+                    <div class="col-sm-6">
+                        <!--breadcrumbs start -->
+                        <ul class="breadcrumb">
+                            <li><%= link_to 'Todo List', todo_lists_path %>
+                            </li>
+                            <li class="active"><%= @todo_list.title %></li>
+                        </ul>
+                    </div>
+                    <div class="col-sm-6">
+                       <div class="btn-group actions pull-right">
+                        <br>
+                          <button type="button" class="btn btn-primary btn-xs btn-trans dropdown-toggle" data-toggle="dropdown">
+                              <i class="fa fa-bars"> Settings </i><span class="caret"></span>
+                          </button>
+                          <ul class="dropdown-menu" role="menu">
+                            <li><%= link_to "Current tasks", todo_list_path(@todo_list) %></li>
+                            <%
+=begin
+%><li><%= link_to "To be assessed", todo_list_path(@todo_list, view: "Assess") %></li><%
+=end
+%>
+                            <li><%= link_to "History", todo_list_path(@todo_list, view: "History") %></li>
+                          </ul>
+                      </div>
+                    </div>
+        </div>
+       
+        <div class="row">
+          <div class="col-md-12">
+              <span style="color: #9eafba;text-decoration: none;font-size: 1.5em;"><i class="fa fa-tag fa-1x"> Filter :</i></span>
+              
+              <span class="btn btn-primary btn-sm"><%= link_to "All", todo_list_path(@todo_list), :style=>'color:#FFFFFF;' %></span>
+              
+              <% if TodoItem.tag_counts.length > 0 %>
+                <% tag_cloud @todo_list.todo_items.tag_counts, %w(css1 css2 css3 css4) do |tag| %>
+                    <span class="btn btn-primary btn-sm"><%= link_to tag.name, tag_path(@todo_list, tag.name), :style=>'color:#FFFFFF;'  %></span>
+                <% end %>
+              <% else -%>
+                <%= content_tag :p, 'No tags' %>
+              <% end %>
+          </div>
+       </div>
+       <br>
+
+
+
+        <div class="row">
+          <div class="col-md-12">
+              <div class="panel panel-default">
+                    <div class="panel-heading">
+                       
+                          <h3 class="panel-title">Tasks</h3>
+                          <div class="actions pull-right">
+                                   <%= link_to 'Create a new task',new_todo_list_todo_item_path(@todo_list),{:remote => true, 'data-toggle' =>  "modal", 'data-target' => '#modal-new',:class => "btn btn-primary btn-xs"}  %>
+                          </div>
+                    </div>
+                    
+                    <div class="panel-body">
+                     
+                       <table id="tasks" class="table table-hover" cellspacing="0" width="100%">
+                        <thead>
+                          <tr>
+                            <th>Complete</th>
+                            <th>Priority</th>
+                            <th>Task</th>
+                            <th>In charge</th>
+                            <th>Deadline</th>
+                            <th>Efficiency</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
+                          </tr>
+                        </thead>
+                          <tbody>
+                              <% @todo_item.each do |todo_item| %>
+                                      <tr>
+                                       
+                                          <% if todo_item.completed? %>
+                                         
+                                              <td width="5%" style="vertical-align: middle;text-align:center"><%= link_to incomplete_todo_list_todo_item_path(@todo_list, todo_item.id), method: :patch do %><i class="fa fa-check-square-o fa-lg" style="opacity:0.4;"> </i><% end %></td>
+                                              
+                                              <% if todo_item.priority=="High" %>
+                                                <td style="vertical-align: middle;opacity:0.4;" ><button type="button" class="btn btn-danger btn-xs"><strike><%= todo_item.priority %></strike></button></td>
+                                              <% elsif todo_item.priority=="Medium"  %>
+                                                <td style="vertical-align: middle;opacity:0.4;" ><button type="button" class="btn btn-warning btn-xs"><strike><%= todo_item.priority %></strike></button></td>
+                                              <% else %>
+                                                <td style="vertical-align: middle;opacity:0.4;" ><button type="button" class="btn btn-primary btn-xs"><strike><%= todo_item.priority %></strike></button></td>
+                                              <% end %>
+
+                                              <td style="vertical-align: middle;opacity:0.4;"><strike><%= todo_item.content %></strike></td> 
+                                              <td style="vertical-align: middle;opacity:0.4;" ><%= raw todo_item.tag_list.map{|t| link_to t, tag_path(@todo_list, t), :class =>"btn btn-primary btn-xs"}.join(' ')%></td>
+                                              <td style="vertical-align: middle;opacity:0.4; text-decoration:line-through;"><%= todo_item.deadline %></td> 
+                                               <% if todo_item.efficiency? %>
+                                                  <td width="5%" style="vertical-align: middle;text-align:center;opacity:0.4;"><%= todo_item.efficiency %></td> 
+                                                  <td width="5%" style="vertical-align: middle;text-align:center">
+                                                      <div class="btn-group">
+                                                         <button type="button" class="btn btn-primary btn-xs btn-trans dropdown-toggle" data-toggle="dropdown">
+                                                          <i class="fa fa-thumbs-up"></i><span class="caret"></span>
+                                                        </button>
+                                                        <ul class="dropdown-menu" role="menu">
+                                                          <li><%= link_to "High", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => 'High'), method: :patch %></li>
+                                                          <li><%= link_to "Medium", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => 'Medium'), method: :patch %></li>
+                                                          <li><%= link_to "Low", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => 'Low'), method: :patch %></li>
+                                                          <li><%= link_to "Cancel", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => nil), method: :patch %></li>
+                                                        </ul>
+                                                      </div>
+                                                </td>
+                                                <td width="5%" style="vertical-align: middle;text-align:center"><%= link_to todo_list_todo_item_path(@todo_list, todo_item.id), method: :delete, data: { confirm: 'Are you sure?'} do %><i class="fa fa-trash fa-lg"> </i><% end%></td>
+                                              <% else %>
+                                                  <td width="5%" style="vertical-align: middle;text-align:center;">
+                                                        <div class="btn-group">
+                                                           <button type="button" class="btn btn-primary btn-xs btn-trans dropdown-toggle" data-toggle="dropdown">
+                                                            <i class="fa fa-thumbs-up" ></i><span class="caret"></span>
+                                                          </button>
+                                                          <ul class="dropdown-menu" role="menu">
+                                                            <li><%= link_to "High", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => 'High'), method: :patch %></li>
+                                                             <li><%= link_to "Medium", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => 'Medium'), method: :patch %></li>
+                                                            <li><%= link_to "Low", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => 'Low'), method: :patch %></li>
+                                                          </ul>
+                                                        </div>
+                                                  </td>
+                                                  <td width="5%" style="vertical-align: middle;text-align:center;opacity:0.4;"></td>
+                                                  <td width="5%" style="vertical-align: middle;text-align:center;opacity:0.4;"></td>
+                                              <% end %>
+                                              
+                                             
+                                      
+                                           
+                                          <% else %>
+                                           
+                                              <td width="5%" style="vertical-align: middle;text-align:center"><%= link_to complete_todo_list_todo_item_path(@todo_list, todo_item.id), method: :patch do %><i class="fa fa-square-o fa-lg"> </i><% end %></td>
+                                              
+                                              <% if todo_item.priority=="High" %>
+                                                <td style="vertical-align: middle;" ><button type="button" class="btn btn-danger btn-xs"><%= todo_item.priority %></button></td>
+                                              <% elsif todo_item.priority=="Medium"  %>
+                                                <td style="vertical-align: middle;" ><button type="button" class="btn btn-warning btn-xs"><%= todo_item.priority %></button></td>
+                                              <% else %>
+                                                <td style="vertical-align: middle;" ><button type="button" class="btn btn-primary btn-xs"><%= todo_item.priority %></button></td>
+                                              <% end %>
+
+                                              <td style="vertical-align: middle;"><%= todo_item.content %></td> 
+                                              
+                                              <td style="vertical-align: middle;" ><%= raw todo_item.tag_list.map{|t| link_to t, tag_path(@todo_list, t), :class =>"btn btn-primary btn-xs"}.join(' ')%></td>
+                                              <td  style="vertical-align: middle;"><%= todo_item.deadline %></td> 
+
+                                              <% if todo_item.efficiency? %>
+                                                   <td width="5%" style="vertical-align: middle;text-align:center;"><%= todo_item.efficiency %></td>
+                                                   <td width="5%" style="vertical-align: middle;text-align:center;">
+                                                        <div class="btn-group">
+                                                           <button type="button" class="btn btn-primary btn-xs btn-trans dropdown-toggle" data-toggle="dropdown">
+                                                            <i class="fa fa-thumbs-up" ></i><span class="caret"></span>
+                                                          </button>
+                                                          <ul class="dropdown-menu" role="menu">
+                                                            <li><%= link_to "High", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => 'High'), method: :patch %></li>
+                                                             <li><%= link_to "Medium", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => 'Medium'), method: :patch %></li>
+                                                            <li><%= link_to "Low", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => 'Low'), method: :patch %></li>
+                                                            <li><%= link_to "Cancel", efficiency_todo_list_todo_item_path(@todo_list, todo_item.id, :efficiency => nil), method: :patch %></li>
+                                                          </ul>
+                                                        </div>
+                                                  </td>
+                                                  <td width="5%" style="vertical-align: middle;text-align:center"><%= link_to todo_list_todo_item_path(@todo_list, todo_item.id), method: :delete, data: { confirm: 'Are you sure?'} do %><i class="fa fa-trash fa-lg"> </i><% end%></td>
+                                              <% else %>
+                                                  <td width="5%" style="vertical-align: middle;text-align:center">
+                                                        
+                                                  </td>
+                                                  <td width="5%" style="vertical-align: middle;text-align:center"><%= link_to edit_todo_list_todo_item_path(@todo_list, todo_item.id), {:remote => true, 'data-toggle' =>  "modal", 'data-target' => '#modal-edit'} do %><i class="fa fa-edit fa-lg"> </i><% end%></td>
+                                                  <td width="5%" style="vertical-align: middle;text-align:center"><%= link_to todo_list_todo_item_path(@todo_list, todo_item.id), method: :delete, data: { confirm: 'Are you sure?'} do %><i class="fa fa-trash fa-lg" > </i><% end%></td>
+                                                  <% end %>
+                                                 
+                                                  
+                                          <% end %>
+              
+                                    </tr>
+                              <% end %>
+                          </tbody>
+                      </table>
+                    </div>
+                  </div>
+           </div>
+        </div>
+    </section>
+</section>
+
+<div id="modal-edit" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+        </div>
+      </div>
+</div>
+
+<div id="modal-new" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+        </div>
+      </div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+    $('#sandbox-container input').datepicker({
+        format: "dd/mm/yyyy"
+    });
+  });
+</script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+        $('#tasks').DataTable({
+    "pageLength": 50,
+    "bLengthChange": false,
+    "bFilter": true,
+    "bInfo": false,
+    "order": [[ 4, "asc" ]],
+    "columnDefs": [
+       { type: 'date-euro', targets: 4 }
+     ],
+    "bAutoWidth": false });
+
+    } );
+
+  </script>
+
+<script type="text/javascript">
+  jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+    "date-euro-pre": function ( a ) {
+        var x;
+ 
+        if ( $.trim(a) !== '' ) {
+            var frDatea = $.trim(a).split(' ');
+            var frTimea = (undefined != frDatea[1]) ? frDatea[1].split(':') : [00,00,00];
+            var frDatea2 = frDatea[0].split('/');
+            x = (frDatea2[2] + frDatea2[1] + frDatea2[0] + frTimea[0] + frTimea[1] + ((undefined != frTimea[2]) ? frTimea[2] : 0)) * 1;
+        }
+        else {
+            x = Infinity;
+        }
+ 
+        return x;
+    },
+ 
+    "date-euro-asc": function ( a, b ) {
+        return a - b;
+    },
+ 
+    "date-euro-desc": function ( a, b ) {
+        return b - a;
+    }
+} );
+
+</script>

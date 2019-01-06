@@ -1,0 +1,48 @@
+
+        <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel"> Documentation</h4>
+                </div>
+                <div class="modal-body">
+                    <%= form_for @documentation, html: { multipart: true }  do |f| %>
+                    <% if @documentation.errors.any? %>
+               <div id="error_explanation">
+                <h2><%= pluralize(@documentation.errors.count, "error") %> prohibited this documentation from being saved:</h2>
+
+                <ul>
+                <% @documentation.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+                </ul>
+              </div>
+              <% end %>
+             <p>
+                <%= f.label :departement %>
+                <%= f.collection_select :department_id, Category.all, :id, :name, {prompt: "Choose a department"}, { :class => 'form-control' } %>
+              </p>
+               <p>
+                  <%= f.label :doc %><br>
+                  <%= f.select(:doc, ['Processus','Procédure','Instruction'], {}, { :class => 'form-control' }) %>
+              </p>
+              <p>
+                  <%= f.label :format %><br>
+                  <%= f.text_field :format,:placeholder => "Entrer un format", :class=>"form-control" %>
+              </p>
+              <p>
+                <%= f.label :title %><br>
+                <%= f.text_field :title,:placeholder => "Entrer un titre", :class=>"form-control" %>
+              </p>
+              <p>
+                <%= f.label :version %><br>
+                <%= f.number_field :version, :class=>"form-control" %>
+              </p>
+              <p>
+                <%= f.label :file %><br>
+                <%= f.file_field :file %>
+              </p>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                         <%= f.submit :class=>"btn btn-primary"  %>
+                      </div>
+          <% end %>
+        </div>

@@ -1,0 +1,58 @@
+				<%= form_for @indicator do |f| %>
+							<% if @indicator.errors.any? %>
+								<div id="errors">
+									<h2><%= pluralize(@indicator.errors.count, "error") %> prevented this indicator from saving</h2>
+									<ul> 
+										<% @indicator.errors.full_messages.each do |msg| %>
+											<li><%= msg %></li>
+										<% end %>
+									</ul>
+								</div>
+							<% end %>
+
+
+				<div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel"> Indicator</h4>
+                </div>
+
+                <div class="modal-body">
+                
+							<p>	
+                    		 <%= f.check_box :public, data: {toggle: 'toggle', size: 'small', on:'Public', off:'Private', onstyle:"primary", offstyle:"danger"} %>
+                    		</p>
+                    		<p>
+								<%= f.label :department %>
+								<%= f.collection_select :department_id, Department.all, :id, :name, {prompt: "Choose a department"}, { :class => 'form-control' } %>
+							</p>
+							<p>
+								<%= f.label :tag_list %><br>
+								<%= f.text_field :tag_list,value: @indicator.tag_list.join(","), placeholder: "Tags seperated by commas", :class=>"form-control" %>
+							</p>
+							<p>
+								<%= f.label :graph %><br>
+								<%= f.select(:graph, ['column','bar','line','area','stacked_column','stacked_bar','stacked_area', 'spider_line'], {}, { :class => 'form-control' }) %>
+							</p>
+							<p>
+								<%= f.label :name %><br>
+								<%= f.text_field :name,:placeholder => "Entrer un titre pour le graphiaue", :class=>"form-control" %>
+							</p>
+							<p>
+								<%= f.label :yaxis %><br>
+								<%= f.text_area :yaxis, :placeholder => "Entrer le titre de l'axe Y", :class=>"form-control", :style=>"min-height: 100px;" %>
+							</p>
+							<p>
+								<%= f.label :data %><br>
+								<%= f.text_area :data, :placeholder => "Entrer les données", :class=>"form-control", :style=>"min-height: 100px;" %>
+							</p>     
+							
+			                <div class="modal-footer">
+			                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			                   <%= f.submit :class=>"btn btn-primary"  %>
+			                </div>
+					<% end %>
+				</div>
+
+
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>

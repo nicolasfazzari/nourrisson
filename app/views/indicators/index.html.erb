@@ -1,0 +1,174 @@
+<section class="main-content-wrapper">
+	<section id="main-content">
+		 <div class="row">
+		 	<div class="col-md-10">
+		 		<span style="color: #9eafba;text-decoration: none;font-size: 1.2em;"><i class="fa fa-sitemap fa-1x"> Department:</i></span>
+		 		<%= link_to "All", indicators_path, :class => "btn btn-primary btn-xs" %>
+			 	<% Department.all.each do |department| %>
+			 		<%= link_to department.name, indicators_path(department: department.name), :class => "btn btn-primary btn-xs" %>
+			 	<% end %>
+			 	<br>	<br>
+		 	</div>
+		 	<div class="col-md-2">
+		 		<div class="pull-right">
+			 		
+				 		<%= link_to new_indicator_path, {:remote => true, 'data-toggle' =>  "modal", 'data-target' => '#modal-window'}  do %><i class="fa fa-bar-chart"></i> Add indicator<% end %>  |  
+					 	<%= link_to new_kpi_path, {:remote => true, 'data-toggle' =>  "modal", 'data-target' => '#modal-kpi'}  do %><i class="fa fa-dashboard"></i> Add kpi<% end %>
+				 	<br>	<br>
+				
+				</div>
+		 	</div>
+		 </div>
+		 <div class="row">
+		 	<div class="col-md-10">
+				<span style="color: #9eafba;text-decoration: none;font-size: 1.2em;"><i class="fa fa-tag fa-1x"> tags :</i></span>
+				<%= link_to "All", indicators_path, :class => "btn btn-primary btn-xs" %>
+			 	<% if Indicator.tag_counts.length > 0 %>
+                <% tag_cloud @indicators.tag_counts, %w(css1 css2 css3 css4) do |tag| %>
+                    <span class="btn btn-primary btn-xs"><%= link_to tag.name, indicators_path(tag: tag.name), :style=>'color:#FFFFFF;'  %></span>
+                <% end %>
+              <% else -%>
+                <%= content_tag :p, 'No tags' %>
+              <% end %>
+			 </div>
+			 <br>	<br>
+		  </div>
+
+								    <div class="row">
+										<% @kpis.each.with_index do |kpi, index| %>
+											<div class="col-md-3 col-sm-6">
+												<div class="dashboard-tile detail tile-<%= kpi.color %>">
+													<div class="pull-right">
+														<p style="font-size:0.7em;"><%= kpi.updated_at.strftime('%v') %></p>
+													</div>
+													<div class="pull-left">
+													<% if current_user.admin?  %>
+															<div class="btn-group">
+															    <button type="button" class="btn btn-default btn-xs btn-trans dropdown-toggle" data-toggle="dropdown">
+															          <i class="fa fa-cog"></i><span class="caret"></span>
+															    </button>
+															     <ul class="dropdown-menu" role="menu">
+															        <li><%= link_to edit_kpi_path(kpi), {:remote => true, 'data-toggle' =>  "modal", 'data-target' => '#modal-kpi'} do %><i class="fa fa-edit"></i> Edit<% end %>
+															        </li>
+															        <li><%= link_to kpi_path(kpi),data: {:confirm => 'Are you sure?'}, :method => :delete, :class => "button" do %><i class="fa fa-trash-o"></i> Delete<% end %>
+															       	</li>
+															      </ul>
+															</div>
+														<% end %>
+													</div>
+													<div class="content">
+														
+														<h1 class="text-left timer" data-speed="2500" data-to="180" data-from="0">
+															<%= kpi.datum %>
+														</h1>
+															<p><%= kpi.name %></p>
+													</div>
+													<div class="icon">
+														<i class="fa fa-warning"></i>
+													</div>
+													
+												</div>
+
+											</div>
+										<% end %>
+									</div>
+           							
+									
+										<div class="row" style='margin-bottom:20px' id="indicators" data-update-url="<%= sort_indicators_url %>">
+											<% @index=0 %>
+											<% @indicators.each.with_index do |indicator, index| %>
+												<% if index.odd? %>
+									                    <div class="col-md-6" id="indicator_<%= indicator.id %>">
+									       
+									                        <div class="panel panel-default">
+									                            <div class="panel-heading">
+									                                <h5 class="panel-title"><% if current_user.admin? || indicator.user==current_user %><i class="fa fa-arrows-alt handle" ></i> <% end %><%= link_to indicator.department.name, indicators_path(department: indicator.department.name), :class => "btn btn-default btn-xs" %> <%= raw indicator.tag_list.map{|t| link_to t, indicators_path(tag: t), :class =>"btn btn-default btn-xs"}.join(' ')%> <% if indicator.public==true %><button type="button" class="btn btn-primary btn-xs">Public</button> <% else %><button type="button" class="btn btn-danger btn-xs">Private</button><% end %></h5>
+									                                <div class="actions pull-right">
+									                                	<% if indicator.user==current_user %>
+									                                	<div class="btn-group">
+										                                       <button type="button" class="btn btn-default btn-xs btn-trans dropdown-toggle" data-toggle="dropdown">
+										                                        <i class="fa fa-cog"></i><span class="caret"></span>
+										                                      </button>
+	
+										                                      <ul class="dropdown-menu" role="menu">
+										                                        <li><%= link_to edit_indicator_path(indicator), {:remote => true, 'data-toggle' =>  "modal", 'data-target' => '#modal-window'}  do %><i class="fa fa-edit"></i> Edit<% end %></li>
+										                                        <li><%= link_to indicator_path(indicator),data: {:confirm => 'Are you sure?'}, :method => :delete, :class => "button" do %><i class="fa fa-trash-o"></i> Delete<% end %></li>
+										                                      </ul>
+										                                    </div>
+									                                    <% end %>
+									                                </div>
+									                            </div>
+									                            <div class="panel-body">
+																	<div id="graph" style="min-width: 100%; height: 100%; margin: 0 auto">
+																		<h2 class="title"></h2>
+																			<%= high_chart(('a'..'z').to_a.shuffle.join, @charts[@index]) %>
+																			<% @index += 1 %>
+																	</div>
+														
+																	<div class="pull-right">
+																		<p style="font-size:0.7em;">Updated at: <%= indicator.updated_at.strftime('%v') %></p>
+																	</div>
+																</div>
+								                            </div>
+								                        </div>
+								                   
+								                <% else %>
+								                	
+									                   <div class="col-md-6" id="indicator_<%= indicator.id %>">
+									                   	  
+									                        <div class="panel panel-default">
+									                            <div class="panel-heading">
+									                                <h5 class="panel-title"><% if current_user.admin? || indicator.user==current_user %><i class="fa fa-arrows-alt handle" style="cursor: move"></i> <% end %><%= link_to indicator.department.name, indicators_path(department: indicator.department.name), :class => "btn btn-default btn-xs" %> <%= raw indicator.tag_list.map{|t| link_to t, indicators_path(tag: t), :class =>"btn btn-default btn-xs"}.join(' ')%>  <% if indicator.public==true %><button type="button" class="btn btn-primary btn-xs">Public</button> <% else %><button type="button" class="btn btn-danger btn-xs">Private</button><% end %></h5>
+									                                <div class="actions pull-right">
+									                                	<% if indicator.user==current_user %>
+									                                	<div class="btn-group">
+										                                       <button type="button" class="btn btn-default btn-trans btn-xs dropdown-toggle" data-toggle="dropdown">
+										                                        <i class="fa fa-cog"></i><span class="caret"></span>
+										                                      </button>
+										                                      <ul class="dropdown-menu" role="menu">
+										                                        <li><%= link_to edit_indicator_path(indicator), {:remote => true, 'data-toggle' =>  "modal", 'data-target' => '#modal-window'}  do %><i class="fa fa-edit"></i> Edit<% end %></li>
+										                                        <li><%= link_to indicator_path(indicator),data: {:confirm => 'Are you sure?'}, :method => :delete, :class => "button" do %><i class="fa fa-trash-o"></i> Delete<% end %></li>
+										                                      </ul>
+										                                    </div>
+									                                    <% end %>
+									                                </div>
+									                            </div>
+									                            <div class="panel-body">
+																	<div id="graph" style="min-width: 100%; height: 100%; margin: 0 auto">
+																		<h2 class="title"></h2>
+																			<%= high_chart(('a'..'z').to_a.shuffle.join, @charts[@index]) %>
+																			<% @index += 1 %>
+																	</div>
+																
+																	<div class="pull-right">
+																		<p style="font-size:0.7em;">Updated at: <%= indicator.updated_at.strftime('%v') %></p>
+																	</div>
+																</div>
+								                            </div>
+								                        </div>
+								                <% end %>
+											<% end %>
+										</div>
+								
+            </section>
+         </section>
+         <!--main content end-->
+         <!-- Basic Modal -->
+    <div id="modal-window" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+
+		    </div>
+		  </div>
+	</div>
+	<div id="modal-kpi" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+
+		    </div>
+		  </div>
+	</div>
+    <!-- End Basic Modal -->
+	  <!-- Form Modal -->
+
+	    <!-- End Form Modal -->
