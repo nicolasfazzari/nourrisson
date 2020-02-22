@@ -1,6 +1,6 @@
 class IndicatorsController < ApplicationController
 	before_filter :must_be_admin, only: [:new,:create,:edit,:update,:destroy]
-	before_filter :authenticate_user!, only: [:index,:show]
+	before_filter :authenticate_user!, only: [:index,:show;:destroy]
 	def index
 		@indicators = Indicator.where('user_id = ? or public = ?', current_user, true).order(:position)
 		if  params[:tag].blank? && params[:department].blank? 
